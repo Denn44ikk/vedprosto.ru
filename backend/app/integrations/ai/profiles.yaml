@@ -1,0 +1,31 @@
+text_exp:
+  provider: cheap_gpt
+  model: gpt-5.4
+  fallback: text_cheap
+
+text_cheap:
+  provider: cheap_gpt
+  model: gpt-5.4-mini
+
+ocr_exp:
+  provider: cheap_gpt
+  model: gpt-5.4
+  fallback: ocr_cheap
+
+ocr_cheap:
+  provider: cheap_gpt
+  model: gpt-5.4-mini
+
+chat_cli:
+  provider: cheap_gpt
+  model: gpt-5.4
+  fallback: text_cheap
+
+image_exp:
+  provider: openai
+  model: gpt-image-1
+  fallback: image_cheap
+
+image_cheap:
+  provider: cheap_gpt
+  model: gpt-image-1

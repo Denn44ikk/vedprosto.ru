@@ -1,0 +1,53 @@
+{
+  "case_id": "case_000015",
+  "source": {
+    "source_type": "workbook",
+    "source_file": "direct_supply.xlsx",
+    "sheet_name": "Sheet1",
+    "row_number": 15,
+    "row_span": "15",
+    "source_rows": [
+      15
+    ]
+  },
+  "product": {
+    "raw_name": "Смеситель кухонный латунный",
+    "extra_info": "Хромированное покрытие, комплект шлангов, бытовое назначение",
+    "normalized_name": "Смеситель кухонный латунный для бытового использования",
+    "brand": "AquaHome",
+    "model": "AH-120",
+    "material": "латунь"
+  },
+  "media": {
+    "image_files": [
+      "image_01.jpg",
+      "image_02.jpg"
+    ],
+    "image_count": 2
+  },
+  "groups": {
+    "duplicate_group_id": "dup_003",
+    "duplicate_group_size": 4,
+    "same_name_group_id": "same_002",
+    "same_name_group_size": 2
+  },
+  "status": {
+    "review_status": "pending",
+    "prefetch_status": "idle",
+    "work_status": "prepared",
+    "last_completed_stage": "workbook_intake"
+  },
+  "links": {
+    "source_row": "source_row.json",
+    "work_status": "work/status.json",
+    "ocr": "work/ocr.json",
+    "tnved": "work/tnved.json",
+    "verification": "work/verification.json",
+    "enrichment": "work/enrichment.json",
+    "calculations": "work/calculations.json",
+    "questions": "work/questions.json",
+    "pipeline_result": "result/pipeline_result.json",
+    "ui_response": "result/ui_response.json",
+    "export": "result/export.json"
+  }
+}

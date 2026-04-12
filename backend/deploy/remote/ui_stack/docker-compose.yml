@@ -1,0 +1,18 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    env_file:
+      - .env
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:${APP_PORT:-8011}"
+    volumes:
+      - ./data/runtime:/srv/agent_ui/backend/runtime
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os, urllib.request; urllib.request.urlopen(f'http://127.0.0.1:{os.getenv(\\\"APP_PORT\\\", \\\"8011\\\")}/api/health', timeout=5).read()\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s

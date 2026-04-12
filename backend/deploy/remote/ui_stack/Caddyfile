@@ -1,0 +1,4 @@
+{$APP_SITE_ADDRESS} {
+    encode zstd gzip
+    reverse_proxy backend:{$BACKEND_PORT}
+}

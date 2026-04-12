@@ -1,0 +1,15 @@
+{
+  "status": "completed",
+  "validation_status": "needs_review",
+  "semantic_status": "passed",
+  "ifcg_status": "pending",
+  "final_code": "8481801100",
+  "repaired_code": "",
+  "repair_note": "",
+  "error": "",
+  "error_code": "",
+  "notes": [
+    "Нужна внешняя проверка по IFCG и ставкам."
+  ],
+  "trace": {}
+}

@@ -1,0 +1,26 @@
+{
+  "status": "completed",
+  "error_text": "",
+  "text_cn": "原始中文名称",
+  "text_ru": "Переведенное название товара",
+  "ocr_text": "Подробный OCR и визуальное описание по фото: модель, маркировка, технические признаки.",
+  "image_description": "Подробный визуальный разбор по фото с перечислением видимых признаков и маркировки.",
+  "source_description": "Дополнительное описание из таблицы.",
+  "triage": {
+    "item_name": "Краткое название товара",
+    "is_marking_present": true,
+    "is_text_readable": true,
+    "complex_required": true,
+    "reason": "На фото есть маркировка и технические детали, нужен углубленный OCR."
+  },
+  "ocr_rounds": 1,
+  "quality_check": {
+    "reviewer": "cheap_text_check",
+    "retry_required": false,
+    "reason": "Текста уже достаточно для следующего этапа.",
+    "confidence": "high",
+    "has_concrete_data": true,
+    "fallback_reason": "ocr_quality_ok"
+  },
+  "structured_attributes": {}
+}

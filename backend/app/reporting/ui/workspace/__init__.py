@@ -1,0 +1,1 @@
+"""Workspace UI payload assembly."""

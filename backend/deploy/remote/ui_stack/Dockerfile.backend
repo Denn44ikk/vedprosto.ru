@@ -1,0 +1,15 @@
+FROM python:3.12-slim
+
+WORKDIR /srv
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+COPY agent_ui/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+COPY agent_ui /srv/agent_ui
+
+WORKDIR /srv/agent_ui
+
+CMD ["sh", "-c", "uvicorn backend.app.main:app --host ${APP_HOST:-0.0.0.0} --port ${APP_PORT:-8011}"]

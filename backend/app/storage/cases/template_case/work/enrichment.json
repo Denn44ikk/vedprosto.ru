@@ -1,0 +1,22 @@
+{
+  "status": "partial",
+  "ifcg_discovery": {
+    "status": "pending",
+    "summary": "",
+    "suggested_groups": [],
+    "suggested_codes": []
+  },
+  "ifcg_verification": {
+    "status": "pending"
+  },
+  "its": {
+    "status": "pending",
+    "its_value": null
+  },
+  "sigma": {
+    "status": "pending",
+    "duty_text": "",
+    "vat_text": ""
+  },
+  "trace": {}
+}

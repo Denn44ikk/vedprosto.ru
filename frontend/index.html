@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TNVED Workspace</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231f4856'/%3E%3Cpath d='M18 20h28v6H35v18h-6V26H18z' fill='%23f4faf9'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/assets/app.css?v=20260412_its_toggle" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="toolbar-cluster toolbar-cluster-root">
+          <span class="toolbar-cluster-label">Таблица</span>
+          <div class="toolbar-cluster-body topbar-left">
+            <button class="ghost-button" id="toggle-workbook-button" type="button">Загрузить таблицу</button>
+            <select id="root-select" class="toolbar-select"></select>
+            <button class="ghost-button" id="refresh-workspace-button" type="button">Обновить экран</button>
+            <button
+              class="ghost-button ghost-button-tight topbar-delete-root-button"
+              id="delete-root-button"
+              type="button"
+              title="Удалить текущую таблицу"
+              aria-label="Удалить текущую таблицу"
+            >
+              ×
+            </button>
+            <div class="view-switcher topbar-view-switcher">
+              <button class="view-tab is-active" id="tab-workspace-button" type="button">Карточка</button>
+              <button class="view-tab" id="tab-table-button" type="button">Таблица</button>
+            </div>
+            <button class="ghost-button ghost-button-tight" id="toggle-helper-button" type="button">Подсказки</button>
+          </div>
+        </div>
+
+        <div class="toolbar-cluster toolbar-cluster-actions">
+          <span class="toolbar-cluster-label">OCR / подбор</span>
+          <div class="toolbar-cluster-body topbar-right">
+            <button class="ghost-button gpt-action-button" id="run-ocr-button" type="button">Подобрать текущий</button>
+            <button class="ghost-button gpt-action-button" id="prefetch-button" type="button">Подобрать 5 подряд</button>
+            <button class="ghost-button stop-action-button" id="stop-ocr-button" type="button">Остановить подбор</button>
+            <button class="ghost-button" id="skip-case-button" type="button">Следующий товар</button>
+            <button class="primary-button" id="save-excel-button" type="button">Записать в Excel</button>
+          </div>
+        </div>
+
+        <div class="toolbar-cluster toolbar-cluster-metrics">
+          <span class="toolbar-cluster-label">Статус</span>
+          <div class="toolbar-cluster-body topbar-center">
+            <button class="ghost-button ghost-button-tight" id="open-its-settings-button" type="button">Настройки ITS</button>
+            <div class="metric-pill">
+              <span>Всего</span>
+              <strong id="metric-total">0</strong>
+            </div>
+            <div class="metric-pill">
+              <span>Готово</span>
+              <strong id="metric-saved">0</strong>
+            </div>
+            <div class="metric-pill">
+              <span>Пропуск</span>
+              <strong id="metric-skipped">0</strong>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section id="toolbar-helper" class="toolbar-helper is-hidden">
+        <div class="toolbar-helper-chip"><strong>Обновить экран</strong> перечитать статусы без нового запуска</div>
+        <div class="toolbar-helper-chip"><strong>Подобрать текущий</strong> только открытый товар</div>
+        <div class="toolbar-helper-chip"><strong>Подобрать 5 подряд</strong> текущий и 4 следующих товара</div>
+        <div class="toolbar-helper-chip"><strong>Остановить подбор</strong> мягко остановить текущий OCR/GPT и очередь</div>
+        <div id="toolbar-helper-rates"></div>
+        <button class="ghost-button ghost-button-tight toolbar-helper-action" id="open-workbook-rules-button" type="button">Инструкция к импорту</button>
+      </section>
+
+      <section id="batch-status-banner" class="batch-status-banner is-hidden"></section>
+
+      <section id="workbook-drawer" class="workbook-drawer is-hidden">
+        <div class="drawer-row">
+          <label class="drawer-upload-field">
+            <span>Файл Excel</span>
+            <input id="workbook-file" type="file" accept=".xlsx,.xls" />
+            <span class="drawer-upload-button"><span class="drawer-upload-button-label">Выбрать таблицу</span></span>
+            <strong id="workbook-file-name" class="drawer-upload-name">Файл еще не выбран</strong>
+          </label>
+          <label class="drawer-field compact">
+            <span>Лист</span>
+            <select id="sheet-select"></select>
+          </label>
+          <label class="drawer-field compact">
+            <span>Строки</span>
+            <input id="rows-input" type="text" value="2-20" />
+          </label>
+          <label class="drawer-checkbox drawer-checkbox-wide">
+            <input id="workbook-auto-extra" type="checkbox" />
+            <span>+10 строк к автоподбору</span>
+          </label>
+          <label class="drawer-checkbox">
+            <input id="detect-duplicates" type="checkbox" checked />
+            <span>проверять дубли</span>
+          </label>
+          <label class="drawer-checkbox drawer-checkbox-wide">
+            <input id="workbook-skip-autorun" type="checkbox" />
+            <span>запустить без подбора</span>
+          </label>
+          <button class="primary-button" id="run-workbook-button" type="button">Создать товары</button>
+        </div>
+        <div id="workbook-status" class="drawer-status">Выбери таблицу, и я сам проверю листы и готовность к созданию товаров.</div>
+      </section>
+
+      <section class="carousel-strip">
+        <div id="row-carousel" class="row-carousel"></div>
+      </section>
+
+      <main id="workspace-view" class="workspace-grid">
+        <section class="column media-column">
+          <div class="panel image-panel">
+            <div class="panel-head">
+              <h2 id="case-caption">Фото</h2>
+              <span id="background-badge" class="small-badge">idle</span>
+            </div>
+            <div id="image-grid" class="image-grid"></div>
+          </div>
+
+          <div class="panel analysis-panel">
+            <div class="panel-head">
+              <h2>Анализ</h2>
+              <span class="small-badge">вход</span>
+            </div>
+            <div id="analysis-content" class="analysis-content"></div>
+          </div>
+        </section>
+
+        <section class="column chat-column">
+          <div class="panel chat-panel">
+            <div class="panel-head">
+              <div class="chat-head-group">
+                <h2>AI агент</h2>
+                <button id="focus-chat-button" class="ghost-button ghost-button-tight" type="button">На весь экран</button>
+              </div>
+              <span id="work-stage" class="small-badge is-hidden"></span>
+            </div>
+
+            <div id="chat-messages" class="chat-messages"></div>
+
+            <div id="model-questions" class="question-box"></div>
+
+            <form id="chat-form" class="chat-form">
+              <textarea id="chat-input" placeholder="Напиши вопрос по текущему товару..."></textarea>
+              <button class="primary-button" type="submit">Отправить</button>
+            </form>
+          </div>
+        </section>
+
+        <aside class="column summary-column">
+          <div class="panel output-panel">
+            <div class="panel-head">
+              <div class="output-head-group">
+                <h2>Выход</h2>
+                <div id="output-status-line" class="output-status-line"></div>
+              </div>
+            </div>
+            <div id="output-canvas" class="output-canvas"></div>
+          </div>
+        </aside>
+
+        <div id="case-progress-overlay" class="case-progress-overlay is-hidden"></div>
+      </main>
+
+      <section id="table-view" class="table-view is-hidden">
+        <div class="panel table-panel">
+          <div class="panel-head">
+            <h2>Таблица</h2>
+            <span class="small-badge">источник</span>
+          </div>
+          <div id="source-table-wrap" class="source-table-wrap"></div>
+        </div>
+      </section>
+    </div>
+
+    <div id="image-modal" class="image-modal is-hidden">
+      <button id="close-image-modal-button" class="image-modal-close" type="button">×</button>
+      <img id="image-modal-content" alt="preview" />
+    </div>
+
+    <div id="workbook-overlay" class="workbook-overlay is-hidden">
+      <div class="workbook-overlay-card">
+        <div class="workbook-overlay-spinner" aria-hidden="true"></div>
+        <div class="workbook-overlay-copy">
+          <div id="workbook-overlay-title" class="workbook-overlay-title">Подбираем ТН ВЭД код</div>
+          <div id="workbook-overlay-text" class="workbook-overlay-text">Подготавливаем товары и запускаем OCR.</div>
+        </div>
+        <div class="workbook-overlay-options">
+          <span id="workbook-overlay-extra" class="workbook-overlay-option">+10 строк</span>
+          <span id="workbook-overlay-skip" class="workbook-overlay-option">Без подбора</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="workbook-rules-modal" class="workbook-rules-modal is-hidden">
+      <div class="workbook-rules-card">
+        <div class="workbook-rules-head">
+          <div>
+            <div class="workbook-rules-kicker">Excel / intake</div>
+            <h2 id="workbook-rules-title">Проверка таблицы перед запуском</h2>
+          </div>
+          <button id="close-workbook-rules-button" class="ghost-button ghost-button-tight" type="button">Закрыть</button>
+        </div>
+
+        <div id="workbook-rules-summary" class="workbook-rules-summary"></div>
+
+        <div class="workbook-rules-layout">
+          <section class="workbook-rules-panel">
+            <div class="workbook-rules-panel-title">Правила</div>
+            <ul class="workbook-rules-list">
+              <li>Каждое изображение должно относиться только к одной строке товара.</li>
+              <li>В одной строке допускается до <strong>5 изображений</strong>.</li>
+              <li>Изображения не должны выходить за границы своей строки и не должны заходить в соседние строки.</li>
+              <li>В таблице не должно быть объединенных ячеек.</li>
+              <li>Обязателен столбец <strong>Наименование</strong> — сюда пишем основное название товара для создания кейса.</li>
+              <li>Столбец <strong>Доп информация</strong> желателен — сюда удобно сводить всю дополнительную информацию по товару: характеристики, состав, размеры, бренд, артикул, примечания.</li>
+              <li>Перед запуском обязательно укажите диапазон строк, которые надо превратить в товары.</li>
+            </ul>
+          </section>
+
+          <section class="workbook-rules-panel">
+            <div class="workbook-rules-panel-title">Что найдено сейчас</div>
+            <div id="workbook-rules-errors" class="workbook-rules-errors"></div>
+            <div id="workbook-rules-meta" class="workbook-rules-meta"></div>
+          </section>
+        </div>
+
+        <div class="workbook-rules-actions">
+          <button id="ack-workbook-rules-button" class="primary-button" type="button">Понял, продолжаем</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="its-settings-modal" class="its-settings-modal is-hidden">
+      <div class="its-settings-card">
+        <div class="its-settings-head">
+          <div>
+            <div class="its-settings-kicker">Telegram / ITS</div>
+            <h2>Настройки подключения</h2>
+          </div>
+          <button id="close-its-settings-button" class="ghost-button ghost-button-tight" type="button">Закрыть</button>
+        </div>
+
+        <div class="its-status-grid">
+          <div class="its-status-item">
+            <span>Runtime</span>
+            <strong id="its-runtime-status">—</strong>
+          </div>
+          <div class="its-status-item">
+            <span>Бот ITS</span>
+            <strong id="its-bot-username">—</strong>
+          </div>
+          <div class="its-status-item">
+            <span>Session</span>
+            <strong id="its-session-file-status">—</strong>
+          </div>
+          <div class="its-status-item">
+            <span>TG API</span>
+            <strong id="its-api-status">—</strong>
+          </div>
+          <div class="its-status-item">
+            <span>Worker</span>
+            <strong id="its-worker-status">—</strong>
+          </div>
+          <div class="its-status-item its-status-item-wide">
+            <span>Путь session</span>
+            <strong id="its-session-path">—</strong>
+          </div>
+        </div>
+
+        <div id="its-status-note" class="its-status-note">Открой окно и проверь доступ перед первым запуском.</div>
+        <div id="its-startup-error" class="its-startup-error is-hidden"></div>
+
+        <div class="its-runtime-toggle">
+          <div>
+            <div class="its-runtime-toggle-title">ITS в подборе кодов</div>
+            <p id="its-enabled-status">—</p>
+          </div>
+          <button class="ghost-button" id="its-enabled-toggle-button" type="button">Переключить ITS</button>
+        </div>
+
+        <div class="its-action-row">
+          <button class="ghost-button" id="its-refresh-button" type="button">Обновить статус</button>
+          <button class="ghost-button" id="its-check-access-button" type="button">Проверить доступ к ТГ</button>
+          <button class="ghost-button" id="its-test-query-button" type="button">Тест ITS</button>
+          <button class="ghost-button" id="its-cancel-login-button" type="button">Отменить login</button>
+          <button class="ghost-button stop-action-button" id="its-delete-session-button" type="button">Удалить session</button>
+        </div>
+
+        <div class="its-settings-layout">
+          <section class="its-settings-panel">
+            <div class="its-panel-head">
+              <h3>Логин / reconnect</h3>
+              <span id="its-pending-step-badge" class="small-badge">idle</span>
+            </div>
+
+            <label class="its-field">
+              <span>Номер телефона</span>
+              <input id="its-phone-input" type="text" placeholder="+79991234567" />
+            </label>
+            <button class="primary-button" id="its-start-login-button" type="button">Начать login</button>
+
+            <div id="its-code-row" class="its-step-row is-hidden">
+              <label class="its-field">
+                <span>Код из Telegram</span>
+                <input id="its-code-input" type="text" placeholder="12345" />
+              </label>
+              <button class="ghost-button" id="its-submit-code-button" type="button">Отправить код</button>
+            </div>
+
+            <div id="its-password-row" class="its-step-row is-hidden">
+              <label class="its-field">
+                <span>Пароль 2FA</span>
+                <input id="its-password-input" type="password" placeholder="Пароль Telegram" />
+              </label>
+              <button class="ghost-button" id="its-submit-password-button" type="button">Отправить пароль</button>
+            </div>
+          </section>
+
+          <section class="its-settings-panel">
+            <div class="its-panel-head">
+              <h3>Диагностика</h3>
+              <span class="small-badge">live</span>
+            </div>
+
+            <label class="its-field">
+              <span>Тестовый код ITS</span>
+              <input id="its-test-code-input" type="text" placeholder="8501100000" />
+            </label>
+
+            <div class="its-diagnostic-card">
+              <div class="its-diagnostic-title">Проверка доступа к Telegram / ITS</div>
+              <div id="its-access-result" class="its-diagnostic-body">Нажми «Проверить доступ к ТГ».</div>
+            </div>
+
+            <div class="its-diagnostic-card">
+              <div class="its-diagnostic-title">Тестовый запрос ITS</div>
+              <div id="its-test-summary" class="its-diagnostic-body">Нажми «Тест ITS», чтобы отправить код в live-бот.</div>
+              <div class="its-diagnostic-split">
+                <div>
+                  <div class="its-diagnostic-subtitle">Распаршено</div>
+                  <pre id="its-test-parsed" class="its-diagnostic-pre">—</pre>
+                </div>
+                <div>
+                  <div class="its-diagnostic-subtitle">Raw reply</div>
+                  <pre id="its-test-raw" class="its-diagnostic-pre">—</pre>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div id="eco-db-entry-modal" class="eco-db-entry-modal is-hidden">
+      <div class="eco-db-entry-card">
+        <div class="eco-db-entry-head">
+          <div>
+            <div class="eco-db-entry-kicker">Экосбор / БД</div>
+            <h2>Проверка строки из базы</h2>
+          </div>
+          <button id="close-eco-db-entry-modal-button" class="ghost-button ghost-button-tight" type="button">Закрыть</button>
+        </div>
+        <div id="eco-db-entry-content" class="eco-db-entry-content"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/assets/app.js?v=20260412_its_toggle"></script>
+  </body>
+</html>

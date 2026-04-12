@@ -1,0 +1,1 @@
+"""Company knowledge storage."""

@@ -1,0 +1,15 @@
+{
+  "status": "ready",
+  "active_catalog_path": "D:\\Разработка\\АзияМаринГрупп\\Автоматизация\\5. Анализатор ТНВЭД в IDE\\agent_ui\\backend\\app\\storage\\knowledge\\catalogs\\tnved_catalog\\catalog.json",
+  "backup_catalog_path": "D:\\Разработка\\АзияМаринГрупп\\Автоматизация\\5. Анализатор ТНВЭД в IDE\\agent_ui\\backend\\app\\storage\\knowledge\\catalogs\\tnved_catalog\\backups\\catalog_20260409_110234.json",
+  "source_url": "https://www.tws.by/tws/tnved/download/excel",
+  "workbook_path": "D:\\Разработка\\АзияМаринГрупп\\Автоматизация\\5. Анализатор ТНВЭД в IDE\\agent_ui\\backend\\app\\storage\\knowledge\\catalogs\\tnved_catalog\\downloads\\tws_tnved_20260409_110146.xlsx",
+  "sheet_name": "ТНВЭД",
+  "active_rows": 13289,
+  "scanned_rows": 13289,
+  "imported_rows": 13289,
+  "updated_at": "2026-04-09T08:02:34+00:00",
+  "notes": [
+    "catalog_replaced_from_workbook"
+  ]
+}

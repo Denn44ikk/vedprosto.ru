@@ -1,0 +1,32 @@
+{
+  "status": "completed",
+  "long_description": "Бытовой кухонный смеситель из латуни с хромированным покрытием, для подачи воды.",
+  "selected_code": "8481801100",
+  "selected_description": "Краны и смесители для раковин, умывальников и подобные изделия",
+  "selection_rationale": "Совпадает с типом изделия, материалом и бытовым назначением.",
+  "confidence_percent": 78,
+  "candidates": [
+    {
+      "code": "8481801100",
+      "title": "Смесители для раковин и аналогичные",
+      "priority": 1,
+      "probability_percent": 78,
+      "reason": "Бытовой смеситель для подачи воды.",
+      "source": "tnved"
+    },
+    {
+      "code": "8481801900",
+      "title": "Прочая арматура для трубопроводов",
+      "priority": 2,
+      "probability_percent": 35,
+      "reason": "Альтернативная общая ветка трубопроводной арматуры.",
+      "source": "tnved"
+    }
+  ],
+  "final_status": "needs_review",
+  "warnings": [],
+  "semantic": null,
+  "verification": null,
+  "trace": {},
+  "error_text": ""
+}

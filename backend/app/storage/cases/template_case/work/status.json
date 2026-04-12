@@ -1,0 +1,8 @@
+{
+  "status": "prepared",
+  "current_stage": "tnved_selection",
+  "last_completed_stage": "ocr",
+  "failed_stage": "",
+  "error_text": "",
+  "updated_at": "2026-04-08T12:00:00"
+}

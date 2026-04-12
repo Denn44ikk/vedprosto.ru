@@ -1,0 +1,50 @@
+{
+  "workspace": {
+    "case_id": "case_000015",
+    "row_number": 15,
+    "title": "Смеситель кухонный латунный"
+  },
+  "input": {
+    "raw_name": "Смеситель кухонный латунный",
+    "ocr_text": "Смеситель кухонный. Латунь. Chrome plated."
+  },
+  "questions": {
+    "status": "ready",
+    "count": 1,
+    "top": [
+      {
+        "id": "tnved_1_material",
+        "question": "Какой точный материал корпуса товара указан в спецификации?",
+        "why": "Материал помогает отличить бытовой смеситель от соседних веток.",
+        "source_stage": "tnved",
+        "priority": 1,
+        "related_codes": [
+          "8481801100"
+        ],
+        "status": "open",
+        "answer": ""
+      }
+    ],
+    "short": [
+      "Какой точный материал корпуса товара указан в спецификации?"
+    ],
+    "answers": []
+  },
+  "decision": {
+    "selected_code": "8481801100",
+    "confidence_percent": 78,
+    "selection_rationale": "Совпадает с типом изделия, материалом и бытовым назначением."
+  },
+  "enrichment": {
+    "its_status": "pending",
+    "sigma_status": "pending",
+    "ifcg_status": "pending"
+  },
+  "calculations": {
+    "eco_fee": null,
+    "stp": null,
+    "its_value": null,
+    "duty_rate": "",
+    "nds_rate": ""
+  }
+}

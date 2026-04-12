@@ -1,0 +1,31 @@
+{
+  "status": "completed",
+  "customs": {
+    "status": "ready",
+    "code": "8481801100",
+    "its_status": "ok",
+    "its_value": 1.58,
+    "its_bracket_value": null,
+    "duty_rate_text": "5%",
+    "fallback_duty_rate_text": "5%",
+    "effective_duty_rate_text": "5%",
+    "effective_duty_source": "primary",
+    "nds_value": 0.2,
+    "effective_nds_rate_text": "20%",
+    "effective_nds_source": "primary",
+    "stp_value": 0.41,
+    "stp_status": "calculated",
+    "notice_text": ""
+  },
+  "stp": {
+    "status": "calculated",
+    "value": 0.41,
+    "notice_text": ""
+  },
+  "eco_fee": {
+    "status": "not_found",
+    "preview": "не найдено",
+    "matches": []
+  },
+  "trace": {}
+}

@@ -1,0 +1,49 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+*.local.*
+backend/deploy/server.config.local.json
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Frontend / tooling
+node_modules/
+dist/
+build/
+
+# Runtime data and generated artifacts
+runtime/
+output/
+backend/runtime/
+backend/deploy/build/
+backend/importtime.err
+backend/app/storage/knowledge/catalogs/tnved_catalog/backups/
+backend/app/storage/knowledge/catalogs/tnved_catalog/downloads/
+*.log
+*.err
+
+# Telegram / auth sessions
+*.session
+*.session-*
+*.session-journal
+*.session-wal
+*.session-shm
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

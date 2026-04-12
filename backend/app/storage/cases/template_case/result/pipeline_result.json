@@ -1,0 +1,69 @@
+{
+  "schema_version": "case_pipeline.v1",
+  "status": "completed",
+  "input": {
+    "item_name": "Смеситель кухонный латунный",
+    "text_cn": "",
+    "text_ru": "Смеситель кухонный латунный",
+    "ocr_text": "Смеситель кухонный. Латунь. Chrome plated.",
+    "image_description": "Смеситель кухонный. Латунь. Chrome plated.",
+    "source_description": "Хромированное покрытие, комплект шлангов, бытовое назначение",
+    "image_paths": [],
+    "triage": {},
+    "structured_attributes": {
+      "материал": [
+        "латунь"
+      ]
+    }
+  },
+  "questions": {
+    "status": "ready",
+    "count": 3,
+    "top": [
+      {
+        "id": "tnved_1_material",
+        "question": "Какой точный материал корпуса товара указан в спецификации?",
+        "why": "Материал помогает отличить бытовой смеситель от соседних веток.",
+        "source_stage": "tnved",
+        "priority": 1,
+        "related_codes": [
+          "8481801100"
+        ],
+        "status": "open",
+        "answer": ""
+      }
+    ],
+    "short": [
+      "Какой точный материал корпуса товара указан в спецификации?"
+    ],
+    "answers": []
+  },
+  "decision": {
+    "selected_code": "8481801100",
+    "selected_description": "Краны и смесители для раковин, умывальников и подобные изделия",
+    "confidence_percent": 78,
+    "selection_rationale": "Совпадает с типом изделия, материалом и бытовым назначением.",
+    "final_status": "needs_review"
+  },
+  "enrichment": {
+    "ifcg_discovery": null,
+    "ifcg_verification": null,
+    "its": null,
+    "sigma": null
+  },
+  "calculations": {
+    "customs": null,
+    "stp": null,
+    "eco_fee": null
+  },
+  "stages": {
+    "ifcg_discovery": null,
+    "tnved": null,
+    "semantic": null,
+    "verification": null,
+    "ifcg_verification": null
+  },
+  "warnings": [],
+  "error_text": "",
+  "trace": {}
+}

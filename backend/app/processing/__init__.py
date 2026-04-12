@@ -1,0 +1,1 @@
+"""Core product processing logic."""
