@@ -145,7 +145,22 @@ class PipelineWorkerPool:
                 task_queue.task_done()
                 continue
 
-            result = self._run_ocr_case(job_id=job_id, request=request, task=task, batch_stop_event=batch_stop_event)
+            try:
+                result = self._run_ocr_case(job_id=job_id, request=request, task=task, batch_stop_event=batch_stop_event)
+            except BaseException as exc:
+                if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+                    task_queue.task_done()
+                    raise
+                error_text = str(exc).strip() or exc.__class__.__name__
+                self.runtime_state_service.set_case_flag(request.root_path, task.case_id, "prefetch_status", "error")
+                result = PipelineCaseResult(
+                    case_id=task.case_id,
+                    position=task.position,
+                    total=task.total,
+                    status="error",
+                    line=f"{task.position}/{task.total} {task.case_id}: ERROR",
+                    error_text=error_text,
+                )
             result_queue.put(result)
             if result.status in {"error", "cancelled"}:
                 batch_stop_event.set()

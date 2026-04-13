@@ -29,7 +29,6 @@ class TnvedVbdService:
     def analyze(self, run_input: TnvedVbdInput) -> TnvedVbdOutput:
         selected_code = normalize_code_10(run_input.selected_code)
         candidate_codes = self._normalize_codes(run_input.candidate_codes)
-        preferred_codes = [selected_code, *candidate_codes]
         if not selected_code:
             return TnvedVbdOutput(
                 status="skipped",
@@ -69,31 +68,22 @@ class TnvedVbdService:
                 },
             )
 
-        query_texts = self._build_queries(run_input)
-        reference_hits = self._vector_db_service.query(
-            index_dir=self._indexing_service.index_dir,
+        reference_hits = self._find_code_hits(
             collection_name="reference_chunks",
-            query_texts=query_texts,
+            selected_code=selected_code,
             top_k=self._max_reference_hits,
-            preferred_codes=preferred_codes,
         )
-        example_hits = self._vector_db_service.query(
-            index_dir=self._indexing_service.index_dir,
+        example_hits = self._find_code_hits(
             collection_name="example_chunks",
-            query_texts=query_texts,
+            selected_code=selected_code,
             top_k=self._max_example_hits,
-            preferred_codes=preferred_codes,
         )
         verification_status = self._determine_verification_status(
             selected_code=selected_code,
             reference_hits=reference_hits,
             example_hits=example_hits,
         )
-        alternative_codes = self._collect_alternative_codes(
-            selected_code=selected_code,
-            reference_hits=reference_hits,
-            example_hits=example_hits,
-        )
+        alternative_codes: list[str] = []
         return TnvedVbdOutput(
             status="ready",
             verification_status=verification_status,
@@ -115,7 +105,8 @@ class TnvedVbdService:
             trace={
                 "selected_code": selected_code,
                 "candidate_codes": candidate_codes,
-                "queries": query_texts,
+                "mode": "exact_selected_code_lookup",
+                "queries": [selected_code],
                 "reference_hits": len(reference_hits),
                 "example_hits": len(example_hits),
                 "reference_chunk_count": reference_chunk_count,
@@ -171,6 +162,67 @@ class TnvedVbdService:
             facts.append(f"{key}: {', '.join(values[:4])}")
         return facts[:8]
 
+    def _find_code_hits(self, *, collection_name: str, selected_code: str, top_k: int) -> list[VectorDbHit]:
+        chunks = self._vector_db_service.load_collection(
+            index_dir=self._indexing_service.index_dir,
+            collection_name=collection_name,
+        )
+        hits: list[VectorDbHit] = []
+        for chunk in chunks:
+            score = self._selected_code_hit_score(chunk, selected_code)
+            if score <= 0:
+                continue
+            hits.append(
+                VectorDbHit(
+                    chunk_id=chunk.chunk_id,
+                    source_path=chunk.source_path,
+                    relative_path=chunk.relative_path,
+                    source_kind=chunk.source_kind,
+                    document_type=chunk.document_type,
+                    section_context=chunk.section_context,
+                    text=chunk.text,
+                    score=score,
+                    mentioned_codes=self._hit_mentioned_codes(chunk, selected_code),
+                )
+            )
+        hits.sort(key=lambda item: (-item.score, item.relative_path, item.chunk_id))
+        return hits[: max(1, int(top_k))]
+
+    @staticmethod
+    def _hit_mentioned_codes(chunk: object, selected_code: str) -> tuple[str, ...]:
+        out: list[str] = []
+        seen: set[str] = set()
+        for item in getattr(chunk, "mentioned_codes", ()) or ():
+            code = normalize_code_10(item)
+            if not code or code in seen:
+                continue
+            seen.add(code)
+            out.append(code)
+        if selected_code and selected_code not in seen:
+            out.insert(0, selected_code)
+        return tuple(out)
+
+    @staticmethod
+    def _selected_code_hit_score(chunk: object, selected_code: str) -> float:
+        mentioned_codes = tuple(
+            code
+            for code in (normalize_code_10(item) for item in getattr(chunk, "mentioned_codes", ()) or ())
+            if code
+        )
+        score = 0.0
+        if selected_code in mentioned_codes:
+            score += 100.0
+
+        text = str(getattr(chunk, "text", "") or "")
+        code_pattern = re.compile(r"(?<!\d)" + r"[\s./-]*".join(re.escape(char) for char in selected_code) + r"(?!\d)")
+        occurrences = len(code_pattern.findall(text))
+        if occurrences:
+            score += min(30.0, 10.0 + occurrences * 2.0)
+
+        if score > 0 and str(getattr(chunk, "source_kind", "")).strip() == "reference":
+            score += 0.8
+        return round(score, 4) if score > 0 else 0.0
+
     @staticmethod
     def _determine_verification_status(
         *,
@@ -178,13 +230,8 @@ class TnvedVbdService:
         reference_hits: list[VectorDbHit],
         example_hits: list[VectorDbHit],
     ) -> str:
-        combined_hits = [*reference_hits, *example_hits]
-        if any(selected_code in hit.mentioned_codes or selected_code in hit.text for hit in reference_hits):
+        if reference_hits or example_hits:
             return "confirmed"
-        if any(hit.mentioned_codes for hit in combined_hits):
-            return "needs_review"
-        if combined_hits:
-            return "no_signal"
         return "no_hits"
 
     @staticmethod
@@ -235,7 +282,7 @@ class TnvedVbdService:
     ) -> str:
         if verification_status == "confirmed":
             return (
-                f"Код {selected_code} подтверждается по VBD: "
+                f"Код {selected_code} найден в VBD: "
                 f"{len(reference_hits)} фрагм. из документов и {len(example_hits)} фрагм. из примеров."
             )
         if verification_status == "needs_review":
@@ -243,7 +290,7 @@ class TnvedVbdService:
             return f"По VBD для {selected_code} найден конфликтующий сигнал: {alt_line}."
         if verification_status == "no_signal":
             return f"Для {selected_code} нашлись документы по товару, но без прямой привязки к коду."
-        return f"По VBD для {selected_code} релевантных фрагментов пока нет."
+        return f"В VBD нет фрагментов с кодом {selected_code}."
 
     @staticmethod
     def _build_note(*, verification_status: str, alternative_codes: list[str]) -> str:

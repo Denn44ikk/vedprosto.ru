@@ -552,6 +552,22 @@ class CasePipelineService:
                     trace={"timeout_sec": self._ifcg_timeout_sec()},
                 )
                 discovery_warnings.append("ifcg_discovery:timeout")
+            except asyncio.CancelledError:
+                ifcg_discovery = IfcgDiscoveryOutput(
+                    status="error",
+                    summary="IFCG discovery was cancelled.",
+                    suggested_groups=(),
+                    suggested_codes=(),
+                    broad_queries=(),
+                    top_codes=(),
+                    operator_short_line="IFCG discovery: cancelled",
+                    operator_long_lines=("IFCG discovery was cancelled before it completed.",),
+                    used=False,
+                    warnings=("cancelled",),
+                    error="cancelled",
+                    trace={"cancelled": True},
+                )
+                discovery_warnings.append("ifcg_discovery:cancelled")
             except Exception as exc:
                 discovery_warnings.append(f"ifcg_discovery_failed:{type(exc).__name__}")
 
@@ -863,6 +879,8 @@ class CasePipelineService:
                 "status": "timeout",
                 "error_text": f"Sigma timeout after {int(self._sigma_timeout_sec())} sec",
             }, None
+        except asyncio.CancelledError:
+            return {"status": "cancelled", "error_text": "Sigma request was cancelled"}, None
         except Exception as exc:
             return {"status": "error", "error_text": _collapse_spaces(exc)}, None
         payload = result.to_dict()
@@ -928,6 +946,23 @@ class CasePipelineService:
                 "error": f"timeout_after_{int(self._ifcg_timeout_sec())}_sec",
                 "trace": {"timeout_sec": self._ifcg_timeout_sec()},
             }, None
+        except asyncio.CancelledError:
+            return {
+                "status": "error",
+                "summary": "IFCG verification was cancelled.",
+                "selected_code": normalized_code,
+                "candidate_codes": list(candidate_codes),
+                "top_codes": [],
+                "operator_short_line": "IFCG verification: cancelled",
+                "operator_long_lines": ["IFCG verification was cancelled before it completed."],
+                "dangerous_signal": False,
+                "rerun_recommended": True,
+                "used": False,
+                "query_plan": {},
+                "judge_result": {},
+                "error": "cancelled",
+                "trace": {"cancelled": True},
+            }, None
         except Exception as exc:
             return {"status": "error", "error": _collapse_spaces(exc)}, None
         return result.to_payload(), result
@@ -958,6 +993,20 @@ class CasePipelineService:
                 "reply_variant": None,
                 "date_text": None,
                 "error_text": f"ITS timeout after {int(self._its_timeout_sec())} sec",
+                "reply_code_match_status": "",
+                "reply_code_candidates": [],
+                "requested_codes": codes,
+                "by_code": {},
+            }, None
+        except asyncio.CancelledError:
+            return {
+                "code": normalized_code,
+                "status": "cancelled",
+                "its_value": None,
+                "its_bracket_value": None,
+                "reply_variant": None,
+                "date_text": None,
+                "error_text": "ITS request was cancelled",
                 "reply_code_match_status": "",
                 "reply_code_candidates": [],
                 "requested_codes": codes,
@@ -1531,8 +1580,10 @@ class CasePipelineService:
                 "final_code": "",
                 "final_status": "cancelled",
             }
-        except Exception as exc:
-            error_text = _collapse_spaces(exc)
+        except BaseException as exc:
+            if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+                raise
+            error_text = _collapse_spaces(exc) or exc.__class__.__name__
             case_context = self._load_case_context(case_dir=case_dir)
             self._write_json(
                 path=case_dir / "work" / "tnved.json",
